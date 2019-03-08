@@ -1,0 +1,135 @@
+program Helicoptere;
+{$UNITPATH \SDL2}
+
+uses SDL2, SDL2_image;
+
+CONST
+LARGEURIMAGEHELICO=128;
+NBSPRITEHELICO=5;
+HAUTEURIMAGEHELICO=55;
+
+var
+sdlWindow1 : PSDL_Window;
+sdlRenderer : PSDL_Renderer;
+sdlEvent: PSDL_Event;
+sdlRect1 : PSDL_Rect;
+sdlTexture1: PSDL_Texture;
+sdlSurface1: PSDL_Surface;
+spriteheli: TSDL_Rect;
+sourisheli: TSDL_Rect;
+finhelico: Boolean;
+
+begin
+	  //Initialisation.
+	if SDL_Init( SDL_INIT_VIDEO ) < 0 then HALT;
+
+	  //Création de la fenêtre
+	sdlWindow1 := SDL_CreateWindow( 'Helicoptere', 50, 50, 500, 500, SDL_WINDOW_SHOWN ); 
+	if sdlWindow1 = nil then HALT;
+
+	sdlRenderer := SDL_CreateRenderer( sdlWindow1, -1, 0 );
+	if sdlRenderer = nil then HALT;
+
+	  //Changement du fond d'écran pour du jaune citron moche.
+	SDL_SetRenderDrawColor( sdlRenderer, 223, 251, 0, 0);
+	SDL_RenderClear( sdlRenderer );
+	SDL_RenderPresent ( sdlRenderer );
+	SDL_Delay( 1000 );
+
+	  //Apparition du rectangle bleu foncé.
+	new( sdlRect1 );	
+	sdlRect1^.x := 260; sdlRect1^.y := 10; sdlRect1^.w := 230; sdlRect1^.h := 230;
+	SDL_SetRenderDrawColor( sdlRenderer, 0, 50, 130, 220 );
+	SDL_RenderDrawRect( sdlRenderer, sdlRect1 );
+	SDL_RenderPresent( sdlRenderer );
+	SDL_Delay( 1000 );
+
+	  //On crée une surface à partir d'un bmp.
+	sdlSurface1 := SDL_LoadBMP('AssetsF1_F2\rider.bmp');
+	if sdlSurface1 = nil then
+		Halt;
+
+	  //On crée une texture à partir d'une surface.
+	sdlTexture1 := SDL_CreateTextureFromSurface(sdlRenderer, sdlSurface1);
+	if sdlTexture1 = nil then
+		Halt;
+
+	  //On interprète la texture.
+	if SDL_RenderCopy(sdlRenderer, sdlTexture1, nil, nil) <> 0 then
+		Halt;
+
+	  //On affiche la texture pendant 2 secondes.
+	SDL_RenderPresent(sdlRenderer);
+	SDL_Delay(2000);
+
+
+	  //Changement du fond d'écran pour du noir.
+	SDL_SetRenderDrawColor( sdlRenderer, 0, 0, 0, 0 );
+	SDL_RenderClear( sdlRenderer );
+	SDL_RenderPresent ( sdlRenderer );
+	SDL_Delay( 500 );
+
+
+	  //On charge une image.
+	sdlTexture1 := IMG_LoadTexture( sdlRenderer, 'AssetsF1_F2\drill.jpg' );
+	if sdlTexture1 = nil then HALT;
+  	SDL_RenderCopy( sdlRenderer, sdlTexture1, nil, nil );
+  	SDL_RenderPresent (sdlRenderer);
+  	SDL_Delay( 2000 );
+
+  	  //Changement du fond d'écran pour du noir.
+	SDL_SetRenderDrawColor( sdlRenderer, 0, 0, 0, 0 );
+	SDL_RenderClear( sdlRenderer );
+	SDL_RenderPresent ( sdlRenderer );
+	SDL_Delay( 500 );
+
+
+  	// Chargement de l'hélico.
+    sdlTexture1 := IMG_LoadTexture( sdlRenderer, 'AssetsF1_F2\Helicopter.png' );
+    if sdlTexture1 = nil then HALT;
+
+  	// Préparation des deux rectangles pour gérer l'hélicoptère, spriteheli pour gérer le sprite utilisé actuellement (pour animer l'hélico)
+  	// Et sourisheli pour gérer la position de l'hélicoptère.
+  	spriteheli.x := 0;
+  	spriteheli.y := 0;
+  	spriteheli.w := LARGEURIMAGEHELICO;
+  	spriteheli.h := HAUTEURIMAGEHELICO;
+
+  	sourisheli.x := 0;
+  	sourisheli.y := 0;
+  	sourisheli.w := LARGEURIMAGEHELICO;
+  	sourisheli.h := HAUTEURIMAGEHELICO;
+
+
+  	// chargement de la texture dans le rectangle.
+  	SDL_RenderCopy(sdlRenderer, sdlTexture1, @spriteheli, @sourisheli);
+  	SDL_RenderPresent(sdlRenderer);
+  	SDL_Delay(2000);
+
+  	finhelico:=false;
+  	While finhelico=false DO
+  	begin
+		sourisheli.x := sdlEvent^.motion.x;
+		sourisheli.y := sdlEvent^.motion.y;
+
+		spriteheli.x:=spriteheli.x+LARGEURIMAGEHELICO;
+		if (spriteheli.x = (LARGEURIMAGEHELICO*NBSPRITEHELICO)) then
+		begin
+			spriteheli.x:=0;
+		end;
+
+		SDL_RenderCopy(sdlRenderer, sdlTexture1, @spriteheli, @sourisheli);
+  		SDL_RenderPresent(sdlRenderer);
+
+  		if SDLK_ESCAPE:=true then
+  		finhelico := true;
+	end;
+
+
+  	  //On nettoie la mémoire.
+  	dispose( sdlEvent );
+  	SDL_DestroyTexture( sdlTexture1 );
+  	SDL_DestroyRenderer( sdlRenderer );
+  	SDL_Quit;
+
+End.
